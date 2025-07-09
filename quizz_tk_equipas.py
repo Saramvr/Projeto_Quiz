@@ -166,7 +166,7 @@ def iniciar_quiz():
 
 def criar_interface_equipas(num):
     
-    janela_equipas = ttk.Toplevel(janela_inicial, themename="minty") 
+    janela_equipas = ttk.Toplevel(janela_inicial) 
     janela_equipas.title("Nomes das Equipas")
     janela_equipas.geometry("400x500")
     
