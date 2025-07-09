@@ -41,7 +41,7 @@ frame_resultados = None
 
 
 def mostrar_frame(frame_a_mostrar):
-    """Esconde todos os frames e mostra o frame desejado."""
+    
     for frame in [frame_inicial, frame_equipas, frame_quiz, frame_resultados]:
         if frame is not None: 
             frame.pack_forget() 
@@ -50,7 +50,7 @@ def mostrar_frame(frame_a_mostrar):
         frame_a_mostrar.pack(expand=True, fill="both") 
 
 def setup_resultados_frame():
-    """Configura e mostra o frame de resultados."""
+    
     global frame_resultados
     if frame_resultados is None:
         frame_resultados = ttk.Frame(root, padding=20)
@@ -64,7 +64,7 @@ def setup_resultados_frame():
         for i, equipa in enumerate(equipas):
             ttk.Label(pontuacoes_inner_frame, text=f"{equipa}: {pontuacoes[i]} pontos").pack()
 
-        # Adiciona a mensagem do vencedor
+        
         max_pontos = max(pontuacoes) if pontuacoes else 0
         vencedores = [equipas[i] for i, p in enumerate(pontuacoes) if p == max_pontos]
         
@@ -82,7 +82,7 @@ def setup_resultados_frame():
     mostrar_frame(frame_resultados)
 
 def mostrar_pergunta():
-    """Atualiza a interface com a pergunta atual."""
+    
     global indice_pergunta, equipa_atual, pergunta_var, opcoes_var, botoes_opcoes, label_equipa
 
     print(f"DEBUG: Função mostrar_pergunta() iniciada para a pergunta índice {indice_pergunta}.")
@@ -106,14 +106,14 @@ def mostrar_pergunta():
         botoes_opcoes[i]["text"] = opcoes[i]
         botoes_opcoes[i]["value"] = opcoes[i]
         botoes_opcoes[i]["state"] = "normal" 
-        botoes_opcoes[i].config(fg="black") 
+        botoes_opcoes[i].config(style="Black.TRadiobutton")
         print(f"DEBUG: Botão {i} setado para: {botoes_opcoes[i]['text']}")
 
     label_equipa.config(text=f"É a vossa vez de jogar: {equipas[equipa_atual]}")
     print("DEBUG: Label equipa atualizado para:", label_equipa["text"])
 
 def responder():
-    """Verifica a resposta e avança para a próxima pergunta/equipa."""
+    
     global indice_pergunta, equipa_atual 
 
     if opcoes_var.get() == "":
@@ -130,17 +130,17 @@ def responder():
     
     for botao in botoes_opcoes:
         if botao["value"] == resposta_certa:
-            botao.config(fg="green")
+            botao.config(style="Green.TRadiobutton")
         elif botao["value"] == resposta_escolhida:
-            botao.config(fg="red")
-
+            botao.config(style="Red.TRadiobutton")
+            
     if resposta_escolhida == resposta_certa:
         pontuacoes[equipa_atual] += 1
 
     root.after(1500, avancar) 
 
 def avancar():
-    """Lógica para avançar para a próxima pergunta ou terminar o quiz."""
+    
     global indice_pergunta, equipa_atual 
 
     indice_pergunta += 1
@@ -153,7 +153,7 @@ def avancar():
         
         
 def setup_quiz_frame():
-    """Configura o frame principal do quiz."""
+    
     global frame_quiz, pergunta_var, opcoes_var, botoes_opcoes, label_equipa
 
     if frame_quiz is None: 
@@ -164,6 +164,12 @@ def setup_quiz_frame():
 
         opcoes_var = ttk.StringVar()
         botoes_opcoes.clear() 
+        
+        s = ttk.Style()
+        s.configure("Black.TRadiobutton", foreground="black")
+        s.configure("Green.TRadiobutton", foreground="green")
+        s.configure("Red.TRadiobutton", foreground="red")
+        
         for _ in range(4):
             botao = ttk.Radiobutton(
                 frame_quiz, variable=opcoes_var, value="", text="", style="TRadiobutton"
@@ -180,7 +186,7 @@ def setup_quiz_frame():
     mostrar_pergunta() 
 
 def setup_equipas_frame(num_equipas):
-    """Configura e mostra o frame para inserção dos nomes das equipas."""
+    
     global frame_equipas, equipas, pontuacoes
 
     
@@ -200,6 +206,7 @@ def setup_equipas_frame(num_equipas):
         entradas.append(entrada)
 
     def confirmar_nomes():
+        global equipas, pontuacoes
         nomes = [e.get().strip() for e in entradas]
         if "" in nomes:
             messagebox.showwarning("Atenção", "Todas as equipas devem ter um nome.")
@@ -213,7 +220,7 @@ def setup_equipas_frame(num_equipas):
     mostrar_frame(frame_equipas)
 
 def setup_inicial_frame():
-    """Configura e mostra o frame inicial para o número de equipas."""
+    
     global frame_inicial
 
     frame_inicial = ttk.Frame(root, padding=20)
