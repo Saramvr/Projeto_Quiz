@@ -129,10 +129,11 @@ def responder():
 
     
     for botao in botoes_opcoes:
-        if botao["value"] == resposta_certa:
-            botao.config(bootstyle="success")
-        elif botao["value"] == resposta_escolhida:
-            botao.config(bootstyle="danger")
+        valor = botao["value"]
+        if valor == resposta_certa:
+            botao.config(bootstyle="success")  
+        elif valor == resposta_escolhida:
+            botao.config(bootstyle="danger")  
             
     if resposta_escolhida == resposta_certa:
         pontuacoes[equipa_atual] += 1
