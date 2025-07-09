@@ -2,7 +2,6 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import messagebox
 import random
-from dados_perguntas import perguntas
 
 try:
     from dados_perguntas import perguntas
@@ -22,6 +21,16 @@ except Exception as e:
 equipas = []
 pontuacoes = []
 
+
+indice_pergunta = 0
+equipa_atual = 0
+janela_quiz = None 
+botoes_opcoes = []
+opcoes_var = None
+pergunta_var = None
+label_equipa = None
+
+
 def mostrar_resultados():
     janela = ttk.Window(themename="minty")
     janela.title("Resultado Final")
@@ -34,24 +43,31 @@ def mostrar_resultados():
     for i, equipa in enumerate(equipas):
         ttk.Label(frame, text=f"{equipa}: {pontuacoes[i]} pontos").pack()
 
-    max_pontos = max(pontuacoes)
-    vencedores = [equipas[i] for i, p in enumerate(pontuacoes) if p == max_pontos]
-    if len(vencedores) == 1:
-        msg = f"A equipa vencedora é: {vencedores[0]}"
+    
+    if pontuacoes:
+        max_pontos = max(pontuacoes)
+        vencedores = [equipas[i] for i, p in enumerate(pontuacoes) if p == max_pontos]
+        if len(vencedores) == 1:
+            msg = f"A equipa vencedora é: {vencedores[0]}"
+        else:
+            msg = "Empate entre: " + ", ".join(vencedores)
     else:
-        msg = "Empate entre: " + ", ".join(vencedores)
+        msg = "Nenhuma equipa jogou." 
 
     ttk.Label(frame, text=msg, font=("Segoe UI", 12, "italic"), padding=10).pack(pady=20)
 
     janela.mainloop()
 
 def iniciar_quiz():
+    
     global indice_pergunta, equipa_atual, janela_quiz, botoes_opcoes, opcoes_var, pergunta_var, label_equipa
+    
     indice_pergunta = 0
     equipa_atual = 0
     print("DEBUG: Função iniciar_quiz() iniciada.")
     print(f"DEBUG: Total de perguntas disponíveis: {len(perguntas)}")
 
+    
     janela_quiz = ttk.Window(themename="minty")
     janela_quiz.title("Quiz de Cultura Geral")
     janela_quiz.geometry("650x450")
@@ -67,8 +83,8 @@ def iniciar_quiz():
 
     for _ in range(4):
         botao = ttk.Radiobutton(
-            frame, variable=opcoes_var, value="", text="", style="TRadiobutton",
-            justify="left" 
+            frame, variable=opcoes_var, value="", text="", style="TRadiobutton"
+            
         )
         botao.pack(anchor="w", pady=5)
         botoes_opcoes.append(botao)
@@ -77,29 +93,37 @@ def iniciar_quiz():
     label_equipa.pack(pady=15)
 
     def mostrar_pergunta():
+        global indice_pergunta, equipa_atual, pergunta_var, opcoes_var, botoes_opcoes, label_equipa, perguntas
         print(f"DEBUG: Função mostrar_pergunta() iniciada para a pergunta índice {indice_pergunta}.")
+        
         if indice_pergunta >= len(perguntas): 
             print("DEBUG: Índice de pergunta fora dos limites. Quiz deveria ter terminado.")
+            janela_quiz.destroy() 
+            mostrar_resultados()  
+            return 
         
-        return
-    
-    pergunta_atual = perguntas[indice_pergunta]
-    print("Pergunta atual:", pergunta_atual["pergunta"])  
-    pergunta_var.set(pergunta_atual["pergunta"])
+        pergunta_atual = perguntas[indice_pergunta]
+        print("DEBUG: Pergunta atual a ser carregada:", pergunta_atual["pergunta"])
+        pergunta_var.set(pergunta_atual["pergunta"])
+        print("DEBUG: pergunta_var (depois de setar):", pergunta_var.get())
 
-    opcoes = pergunta_atual["opcoes"].copy()
-    random.shuffle(opcoes) 
-    opcoes_var.set("")  
+        opcoes = pergunta_atual["opcoes"].copy()
+        random.shuffle(opcoes) 
+        opcoes_var.set("")  
+        print("DEBUG: Opções embaralhadas:", opcoes)
 
-    for i in range(4):
+        for i in range(4):
             botoes_opcoes[i]["text"] = opcoes[i]
             botoes_opcoes[i]["value"] = opcoes[i]
             botoes_opcoes[i]["state"] = "normal"
             botoes_opcoes[i].config(fg="black")
+            print(f"DEBUG: Botão {i} setado para: {botoes_opcoes[i]['text']}")
 
-    label_equipa.config(text=f"É a vossa vez de jogar: {equipas[equipa_atual]}")
+        label_equipa.config(text=f"É a vossa vez de jogar: {equipas[equipa_atual]}")
+        print("DEBUG: Label equipa atualizado para:", label_equipa["text"])
 
     def responder():
+        global indice_pergunta, equipa_atual 
         if opcoes_var.get() == "":
             messagebox.showwarning("Aviso", "Seleciona uma resposta.")
             return
@@ -122,7 +146,7 @@ def iniciar_quiz():
         janela_quiz.after(1500, avancar)
 
     def avancar():
-        global indice_pergunta, equipa_atual
+        global indice_pergunta, equipa_atual 
         indice_pergunta += 1
         equipa_atual = (equipa_atual + 1) % len(equipas)
 
@@ -132,19 +156,25 @@ def iniciar_quiz():
             janela_quiz.destroy()
             mostrar_resultados()
 
-    mostrar_pergunta()
-
+    mostrar_pergunta() 
+    
     botao_confirmar = ttk.Button(frame, text="Confirmar Resposta", command=responder)
     botao_confirmar.pack(pady=10)
 
-    janela_quiz.mainloop()
+    janela_quiz.mainloop() 
+
 
 def criar_interface_equipas(num):
-    janela = ttk.Window(themename="minty")
-    janela.title("Nomes das Equipas")
-    janela.geometry("400x500")
-
-    frame = ttk.Frame(janela, padding=20)
+    
+    janela_equipas = ttk.Toplevel(janela_inicial, themename="minty") 
+    janela_equipas.title("Nomes das Equipas")
+    janela_equipas.geometry("400x500")
+    
+    
+    janela_equipas.grab_set() 
+    janela_inicial.withdraw() 
+    
+    frame = ttk.Frame(janela_equipas, padding=20)
     frame.pack(fill="both", expand=True)
 
     ttk.Label(frame, text="Insere o nome de cada equipa:", font=("Segoe UI", 14, "bold")).pack(pady=(0, 10))
@@ -164,11 +194,28 @@ def criar_interface_equipas(num):
             global equipas, pontuacoes
             equipas = nomes
             pontuacoes = [0] * len(equipas)
-            janela.destroy()
-            iniciar_quiz()
+            janela_equipas.destroy() 
+            janela_inicial.deiconify() 
+            
+            
 
     ttk.Button(frame, text="Iniciar Quiz", command=confirmar).pack(pady=20)
-    janela.mainloop()
+    
+    
+    def ao_fechar_equipas():
+        janela_equipas.destroy()
+        janela_inicial.destroy() 
+        exit() 
+
+    janela_equipas.protocol("WM_DELETE_WINDOW", ao_fechar_equipas)
+    janela_equipas.transient(janela_inicial) 
+
+    janela_equipas.wait_window() 
+
+    
+    janela_inicial.destroy() 
+    iniciar_quiz() 
+
 
 def iniciar_jogo():
     try:
@@ -178,8 +225,10 @@ def iniciar_jogo():
     except ValueError:
         messagebox.showerror("Erro", "Insere um número válido de equipas.")
         return
-    janela_inicial.destroy()
-    criar_interface_equipas(num)
+    
+    
+    criar_interface_equipas(num) 
+    
 
 janela_inicial = ttk.Window(themename="minty")
 janela_inicial.title("Configuração do Quiz")
@@ -194,4 +243,4 @@ entry_num_equipas.pack(pady=5)
 
 ttk.Button(frame_inicial, text="Começar Quiz", command=iniciar_jogo).pack(pady=20)
 
-janela_inicial.mainloop()
+janela_inicial.mainloop() 
