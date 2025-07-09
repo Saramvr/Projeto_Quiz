@@ -106,7 +106,7 @@ def mostrar_pergunta():
         botoes_opcoes[i]["text"] = opcoes[i]
         botoes_opcoes[i]["value"] = opcoes[i]
         botoes_opcoes[i]["state"] = "normal" 
-        botoes_opcoes[i].config(style="Black.TRadiobutton")
+        botoes_opcoes[i].config(bootstyle="secondary")
         print(f"DEBUG: Botão {i} setado para: {botoes_opcoes[i]['text']}")
 
     label_equipa.config(text=f"É a vossa vez de jogar: {equipas[equipa_atual]}")
@@ -130,9 +130,9 @@ def responder():
     
     for botao in botoes_opcoes:
         if botao["value"] == resposta_certa:
-            botao.config(style="Green.TRadiobutton")
+            botao.config(bootstyle="success")
         elif botao["value"] == resposta_escolhida:
-            botao.config(style="Red.TRadiobutton")
+            botao.config(bootstyle="danger")
             
     if resposta_escolhida == resposta_certa:
         pontuacoes[equipa_atual] += 1
@@ -165,10 +165,7 @@ def setup_quiz_frame():
         opcoes_var = ttk.StringVar()
         botoes_opcoes.clear() 
         
-        s = ttk.Style()
-        s.configure("Black.TRadiobutton", foreground="black")
-        s.configure("Green.TRadiobutton", foreground="green")
-        s.configure("Red.TRadiobutton", foreground="red")
+    
         
         for _ in range(4):
             botao = ttk.Radiobutton(
