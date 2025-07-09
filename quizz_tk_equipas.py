@@ -4,15 +4,23 @@ from tkinter import messagebox
 import random
 from dados_perguntas import perguntas
 
+try:
+    from dados_perguntas import perguntas
+    print(f"DEBUG: Perguntas carregadas com sucesso. Total: {len(perguntas)}")
+    if not perguntas:
+        print("DEBUG: A lista 'perguntas' está vazia!")
+        messagebox.showerror("Erro", "O ficheiro de perguntas foi encontrado, mas a lista 'perguntas' está vazia!")
+        exit()
+except ImportError:
+    messagebox.showerror("Erro", "O ficheiro 'dados_perguntas.py' não foi encontrado ou está mal formatado. Certifica-te de que está no mesmo diretório e tem a estrutura correta.")
+    exit()
+except Exception as e:
+    messagebox.showerror("Erro", f"Ocorreu um erro inesperado ao carregar as perguntas: {e}")
+    exit()
+
+
 equipas = []
 pontuacoes = []
-
-def aplicar_estilo(janela):
-    style = ttk.Style(janela)
-    style.theme_use("minty")
-    style.configure("TLabel", font=("Segoe UI", 12))
-    style.configure("TButton", font=("Segoe UI", 12), padding=6)
-    style.configure("TRadiobutton", font=("Segoe UI", 11))
 
 def mostrar_resultados():
     janela = ttk.Window(themename="minty")
@@ -41,6 +49,8 @@ def iniciar_quiz():
     global indice_pergunta, equipa_atual, janela_quiz, botoes_opcoes, opcoes_var, pergunta_var, label_equipa
     indice_pergunta = 0
     equipa_atual = 0
+    print("DEBUG: Função iniciar_quiz() iniciada.")
+    print(f"DEBUG: Total de perguntas disponíveis: {len(perguntas)}")
 
     janela_quiz = ttk.Window(themename="minty")
     janela_quiz.title("Quiz de Cultura Geral")
@@ -58,7 +68,7 @@ def iniciar_quiz():
     for _ in range(4):
         botao = ttk.Radiobutton(
             frame, variable=opcoes_var, value="", text="", style="TRadiobutton",
-            wraplength=500, justify="left"
+            justify="left" 
         )
         botao.pack(anchor="w", pady=5)
         botoes_opcoes.append(botao)
@@ -67,20 +77,27 @@ def iniciar_quiz():
     label_equipa.pack(pady=15)
 
     def mostrar_pergunta():
-        pergunta_atual = perguntas[indice_pergunta]
-        pergunta_var.set(pergunta_atual["pergunta"])
-        opcoes = pergunta_atual["opcoes"].copy()
-        random.shuffle(opcoes)
-
-        opcoes_var.set("")  
+        print(f"DEBUG: Função mostrar_pergunta() iniciada para a pergunta índice {indice_pergunta}.")
+        if indice_pergunta >= len(perguntas): 
+            print("DEBUG: Índice de pergunta fora dos limites. Quiz deveria ter terminado.")
         
-        for i in range(4):
+        return
+    
+    pergunta_atual = perguntas[indice_pergunta]
+    print("Pergunta atual:", pergunta_atual["pergunta"])  
+    pergunta_var.set(pergunta_atual["pergunta"])
+
+    opcoes = pergunta_atual["opcoes"].copy()
+    random.shuffle(opcoes) 
+    opcoes_var.set("")  
+
+    for i in range(4):
             botoes_opcoes[i]["text"] = opcoes[i]
             botoes_opcoes[i]["value"] = opcoes[i]
             botoes_opcoes[i]["state"] = "normal"
             botoes_opcoes[i].config(fg="black")
 
-        label_equipa.config(text=f"É a vossa vez de jogar: {equipas[equipa_atual]}")
+    label_equipa.config(text=f"É a vossa vez de jogar: {equipas[equipa_atual]}")
 
     def responder():
         if opcoes_var.get() == "":
@@ -126,7 +143,6 @@ def criar_interface_equipas(num):
     janela = ttk.Window(themename="minty")
     janela.title("Nomes das Equipas")
     janela.geometry("400x500")
-    aplicar_estilo(janela)
 
     frame = ttk.Frame(janela, padding=20)
     frame.pack(fill="both", expand=True)
@@ -168,7 +184,6 @@ def iniciar_jogo():
 janela_inicial = ttk.Window(themename="minty")
 janela_inicial.title("Configuração do Quiz")
 janela_inicial.geometry("350x250")
-aplicar_estilo(janela_inicial)
 
 frame_inicial = ttk.Frame(janela_inicial, padding=20)
 frame_inicial.pack(expand=True)
@@ -180,4 +195,3 @@ entry_num_equipas.pack(pady=5)
 ttk.Button(frame_inicial, text="Começar Quiz", command=iniciar_jogo).pack(pady=20)
 
 janela_inicial.mainloop()
-
