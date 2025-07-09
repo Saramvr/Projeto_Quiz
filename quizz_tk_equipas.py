@@ -1,29 +1,26 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
+from tkinter import messagebox
 import random
-from perguntas import perguntas
-
-
+from dados_perguntas import perguntas
 
 equipas = []
 pontuacoes = []
 
 def aplicar_estilo(janela):
     style = ttk.Style(janela)
-    style.theme_use("clam")
+    style.theme_use("minty")
     style.configure("TLabel", font=("Segoe UI", 12))
     style.configure("TButton", font=("Segoe UI", 12), padding=6)
     style.configure("TRadiobutton", font=("Segoe UI", 11))
-    janela.configure(bg="#f7f9fc")
 
 def mostrar_resultados():
-    janela = tk.Tk()
+    janela = ttk.Window(themename="minty")
     janela.title("Resultado Final")
     janela.geometry("400x300")
-    janela.configure(bg="#eaf6ff")
 
     frame = ttk.Frame(janela, padding=20)
-    frame.pack(expand=True)
+    frame.pack(expand=True, fill="both")
 
     ttk.Label(frame, text="Pontuações Finais", font=("Segoe UI", 14, "bold")).pack(pady=10)
     for i, equipa in enumerate(equipas):
@@ -37,6 +34,7 @@ def mostrar_resultados():
         msg = "Empate entre: " + ", ".join(vencedores)
 
     ttk.Label(frame, text=msg, font=("Segoe UI", 12, "italic"), padding=10).pack(pady=20)
+
     janela.mainloop()
 
 def iniciar_quiz():
@@ -44,24 +42,23 @@ def iniciar_quiz():
     indice_pergunta = 0
     equipa_atual = 0
 
-    janela_quiz = tk.Tk()
+    janela_quiz = ttk.Window(themename="minty")
     janela_quiz.title("Quiz de Cultura Geral")
     janela_quiz.geometry("650x450")
-    janela_quiz.configure(bg="#d6bbd3")
 
     frame = ttk.Frame(janela_quiz, padding=30, relief="ridge")
     frame.pack(expand=True, fill="both", padx=30, pady=30)
 
-    pergunta_var = tk.StringVar()
+    pergunta_var = ttk.StringVar()
     ttk.Label(frame, textvariable=pergunta_var, wraplength=550, font=("Segoe UI", 16, "bold")).pack(pady=(0, 20))
 
-    opcoes_var = tk.StringVar()
+    opcoes_var = ttk.StringVar()
     botoes_opcoes = []
 
     for _ in range(4):
-        botao = tk.Radiobutton(
-            frame, variable=opcoes_var, value="", text="", font=("Segoe UI", 12), anchor="w",
-            justify="left", width=50, wraplength=500, bg=janela_quiz.cget("bg"), indicatoron=1
+        botao = ttk.Radiobutton(
+            frame, variable=opcoes_var, value="", text="", style="TRadiobutton",
+            wraplength=500, justify="left"
         )
         botao.pack(anchor="w", pady=5)
         botoes_opcoes.append(botao)
@@ -75,13 +72,13 @@ def iniciar_quiz():
         opcoes = pergunta_atual["opcoes"].copy()
         random.shuffle(opcoes)
 
-        opcoes_var.set("")  # limpa seleção
-
+        opcoes_var.set("")  
+        
         for i in range(4):
             botoes_opcoes[i]["text"] = opcoes[i]
             botoes_opcoes[i]["value"] = opcoes[i]
             botoes_opcoes[i]["state"] = "normal"
-            botoes_opcoes[i].config(bg=janela_quiz.cget("bg"), fg="black")
+            botoes_opcoes[i].config(fg="black")
 
         label_equipa.config(text=f"É a vossa vez de jogar: {equipas[equipa_atual]}")
 
@@ -98,9 +95,9 @@ def iniciar_quiz():
 
         for botao in botoes_opcoes:
             if botao["value"] == resposta_certa:
-                botao.config(bg="#d4eeda", fg="green")
+                botao.config(fg="green")
             elif botao["value"] == resposta_escolhida:
-                botao.config(bg="#f8cace", fg="red")
+                botao.config(fg="red")
 
         if resposta_escolhida == resposta_certa:
             pontuacoes[equipa_atual] += 1
@@ -120,13 +117,13 @@ def iniciar_quiz():
 
     mostrar_pergunta()
 
-    botao_confirmar = tk.Button(frame, text="Confirmar Resposta", font=("Segoe UI", 12, "bold"), bg="#cc0099", fg="white", command=responder)
+    botao_confirmar = ttk.Button(frame, text="Confirmar Resposta", command=responder)
     botao_confirmar.pack(pady=10)
 
     janela_quiz.mainloop()
 
 def criar_interface_equipas(num):
-    janela = tk.Tk()
+    janela = ttk.Window(themename="minty")
     janela.title("Nomes das Equipas")
     janela.geometry("400x500")
     aplicar_estilo(janela)
@@ -168,7 +165,7 @@ def iniciar_jogo():
     janela_inicial.destroy()
     criar_interface_equipas(num)
 
-janela_inicial = tk.Tk()
+janela_inicial = ttk.Window(themename="minty")
 janela_inicial.title("Configuração do Quiz")
 janela_inicial.geometry("350x250")
 aplicar_estilo(janela_inicial)
