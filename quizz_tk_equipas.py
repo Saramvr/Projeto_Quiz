@@ -22,6 +22,7 @@ equipas = []
 pontuacoes = []
 indice_pergunta = 0
 equipa_atual = 0
+resposta_selecionada_idx = -1
 
 
 pergunta_var = None
@@ -30,7 +31,7 @@ botoes_opcoes = []
 label_equipa = None
 
 
-root = None 
+root = None
 
 
 frame_inicial = None
@@ -82,63 +83,72 @@ def setup_resultados_frame():
     mostrar_frame(frame_resultados)
 
 def mostrar_pergunta():
-    
-    global indice_pergunta, equipa_atual, pergunta_var, opcoes_var, botoes_opcoes, label_equipa
+    global indice_pergunta, equipa_atual, pergunta_var, botoes_opcoes, label_equipa, resposta_selecionada_idx
 
-    print(f"DEBUG: Função mostrar_pergunta() iniciada para a pergunta índice {indice_pergunta}.")
+    if indice_pergunta >= len(perguntas):
+        setup_resultados_frame()
+        return
     
-    if indice_pergunta >= len(perguntas): 
-        print("DEBUG: Índice de pergunta fora dos limites. Quiz deveria ter terminado.")
-        setup_resultados_frame() 
-        return 
-    
+    resposta_selecionada_idx = -1
+
     pergunta_atual = perguntas[indice_pergunta]
-    print("DEBUG: Pergunta atual a ser carregada:", pergunta_atual["pergunta"])
     pergunta_var.set(pergunta_atual["pergunta"])
-    print("DEBUG: pergunta_var (depois de setar):", pergunta_var.get())
 
     opcoes = pergunta_atual["opcoes"].copy()
-    random.shuffle(opcoes) 
-    opcoes_var.set("")  
-    print("DEBUG: Opções embaralhadas:", opcoes)
+    random.shuffle(opcoes)
 
     for i in range(4):
         botoes_opcoes[i]["text"] = opcoes[i]
-        botoes_opcoes[i]["value"] = opcoes[i]
-        botoes_opcoes[i]["state"] = "normal" 
+        botoes_opcoes[i]["state"] = "normal"
         botoes_opcoes[i].config(bootstyle="secondary")
-        print(f"DEBUG: Botão {i} setado para: {botoes_opcoes[i]['text']}")
 
     label_equipa.config(text=f"É a vossa vez de jogar: {equipas[equipa_atual]}")
     print("DEBUG: Label equipa atualizado para:", label_equipa["text"])
 
-def responder():
     
-    global indice_pergunta, equipa_atual 
+def selecionar_resposta(idx):
+    global resposta_selecionada_idx
+    resposta_selecionada_idx = idx
 
-    if opcoes_var.get() == "":
-        messagebox.showwarning("Aviso", "Seleciona uma resposta.")
-        return
+    for i, botao in enumerate(botoes_opcoes):
+        if i == idx:
+            botao.config(bootstyle="warning")
+        else:
+            botao.config(bootstyle="secondary")
 
-    resposta_certa = perguntas[indice_pergunta]["resposta"]
-    resposta_escolhida = opcoes_var.get()
+def responder(resposta_idx):
+    global indice_pergunta, equipa_atual, resposta_selecionada_idx
+
+    pergunta_atual = perguntas[indice_pergunta]
+    resposta_certa = pergunta_atual["resposta"]
+    resposta_escolhida = botoes_opcoes[resposta_idx]["text"]
 
     
-    for botao in botoes_opcoes:
-        botao.config(state="disabled")
+  
+    for i, botao in enumerate(botoes_opcoes):
+        if botao["text"] == resposta_certa:
+            botao.config(bootstyle="success")
+        elif i == resposta_selecionada_idx and resposta_escolhida != resposta_certa:
+            botao.config(bootstyle="danger")
+        else:
+            botao.config(bootstyle="secondary")
 
+    root.after(1500, lambda: [botao.config(state="disabled") for botao in botoes_opcoes])
     
-    for botao in botoes_opcoes:
-        valor = botao["value"]
-        if valor == resposta_certa:
-            botao.config(bootstyle="success")  
-        elif valor == resposta_escolhida:
-            botao.config(bootstyle="danger")  
-            
     if resposta_escolhida == resposta_certa:
         pontuacoes[equipa_atual] += 1
 
-    root.after(1500, avancar) 
+    
+    
+    def desativar_e_avancar(correta):
+        for botao in botoes_opcoes:
+            botao.config(state="disabled")
+        if correta:
+            pontuacoes[equipa_atual] += 1
+            
+    root.after(1500, desativar_e_avancar)
+    
+    root.after(2000, avancar)
 
 def avancar():
     
@@ -154,34 +164,28 @@ def avancar():
         
         
 def setup_quiz_frame():
-    
-    global frame_quiz, pergunta_var, opcoes_var, botoes_opcoes, label_equipa
+    global frame_quiz, pergunta_var, botoes_opcoes, label_equipa
 
-    if frame_quiz is None: 
+    if frame_quiz is None:
         frame_quiz = ttk.Frame(root, padding=30, relief="ridge")
 
         pergunta_var = ttk.StringVar()
         ttk.Label(frame_quiz, textvariable=pergunta_var, wraplength=550, font=("Segoe UI", 16, "bold")).pack(pady=(0, 20))
 
-        opcoes_var = ttk.StringVar()
-        botoes_opcoes.clear() 
-        
-    
-        
-        for _ in range(4):
-            botao = ttk.Radiobutton(
-                frame_quiz, variable=opcoes_var, value="", text="", style="TRadiobutton"
-            )
-            botao.pack(anchor="w", pady=5)
+        botoes_opcoes.clear()
+
+        for i in range(4):
+            botao = ttk.Button(frame_quiz, text="", command=lambda idx=i: selecionar_resposta(idx))
+            botao.pack(fill="x", pady=5)
             botoes_opcoes.append(botao)
+            
+        ttk.Button(frame_quiz, text="Confirmar Resposta", command=lambda: responder(resposta_selecionada_idx)).pack(pady=10)
 
         label_equipa = ttk.Label(frame_quiz, text="", font=("Segoe UI", 12, "italic"))
         label_equipa.pack(pady=15)
 
-        ttk.Button(frame_quiz, text="Confirmar Resposta", command=responder).pack(pady=10)
-    
     mostrar_frame(frame_quiz)
-    mostrar_pergunta() 
+    mostrar_pergunta()
 
 def setup_equipas_frame(num_equipas):
     
@@ -242,7 +246,7 @@ def setup_inicial_frame():
 
 
 if __name__ == "__main__":
-    root = ttk.Window(themename="minty")
+    root = ttk.Window(themename="solar")
     root.title("Quiz de Cultura Geral")
     root.geometry("650x450") 
     setup_inicial_frame() 
